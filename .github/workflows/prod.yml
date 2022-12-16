@@ -6,12 +6,22 @@ on:
     - main
   pull_request:
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.actor }}/${{ github.event.repository.name }}
+  IMAGE_TAG: 1.0.${{ github.run_number }}
+
 jobs:
   build:
     name: 'Build'
     runs-on: ubuntu-latest
     steps:
-      - name: "Build:checkout"
+      - name: Build:Params to use
+        run: |
+          echo "::notice::IMAGE_NAME: ${{ env.IMAGE_NAME }}"
+          echo "::notice::IMAGE_TAG: ${{ env.IMAGE_TAG }}"
+
+      - name: Build:checkout
         uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
@@ -21,11 +31,12 @@ jobs:
       - name: Login to Github Packages
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Build:dockerimage'
+      - name: Build:build and push docker image
         uses: docker/build-push-action@v2
         with:
-          tags: latest
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
