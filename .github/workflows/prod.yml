@@ -13,8 +13,12 @@ env:
 
 jobs:
   build:
-    name: 'Build'
+    name: Build and publish docker image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Build:Params to use
         run: |
